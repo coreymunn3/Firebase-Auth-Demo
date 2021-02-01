@@ -14,6 +14,26 @@ export const AuthProvider = ({ children }) => {
     return auth.createUserWithEmailAndPassword(email, password);
   };
 
+  const login = (email, password) => {
+    return auth.signInWithEmailAndPassword(email, password);
+  };
+
+  const logout = () => {
+    return auth.signOut();
+  };
+
+  const resetPassword = (email) => {
+    return auth.sendPasswordResetEmail(email);
+  };
+
+  const updateEmail = (email) => {
+    return currentUser.updateEmail(email);
+  };
+
+  const updatePassword = (password) => {
+    return currentUser.updatePassword(password);
+  };
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setCurrentUser(user);
@@ -25,6 +45,11 @@ export const AuthProvider = ({ children }) => {
   const state = {
     currentUser,
     signup,
+    login,
+    logout,
+    resetPassword,
+    updateEmail,
+    updatePassword,
   };
 
   return (

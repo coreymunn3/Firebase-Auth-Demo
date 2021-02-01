@@ -11,9 +11,9 @@ import {
 import CustomAlert from './CustomAlert';
 import { useAuth } from '../context/AuthContext';
 
-const Signup = () => {
+const UpdateProfile = () => {
   const history = useHistory();
-  const { signup } = useAuth();
+  const { currentUser, updateEmail, updatePassword } = useAuth();
   const emailRef = useRef();
   const passwordRef = useRef();
   const passwordConfirmRef = useRef();
@@ -22,16 +22,23 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const promises = [];
     if (passwordRef.current.value === passwordConfirmRef.current.value) {
-      try {
-        setError('');
-        setLoading(true);
-        await signup(emailRef.current.value, passwordRef.current.value);
-        history.push('/');
-      } catch (error) {
-        setError('Failed to create an account');
+      if (emailRef.current.value !== currentUser.email) {
+        promises.push(updateEmail(emailRef.current.value));
       }
-      setLoading(false);
+      if (passwordRef.current.value) {
+        promises.push(updatePassword(passwordRef.current.value));
+      }
+
+      Promise.all(promises)
+        .then(() => {
+          history.push('/');
+        })
+        .catch(() => {
+          setError('Failed to Update Account');
+        })
+        .finally(() => setLoading(false));
     } else {
       setError('Passwords do not match');
     }
@@ -40,7 +47,7 @@ const Signup = () => {
     <Card>
       <CardContent>
         <Typography variant='h4' align='center'>
-          Sign Up
+          Update Profile
         </Typography>
         <Grid container spacing={2}>
           {error && (
@@ -50,21 +57,28 @@ const Signup = () => {
           )}
           <Grid item xs={12}>
             <TextField
+              variant='filled'
               required
               id='username'
               label='UserName'
               type='email'
               inputRef={emailRef}
+              defaultValue={currentUser.email}
               fullWidth
               autoComplete='off'
             ></TextField>
           </Grid>
           <Grid item xs={12}>
             <TextField
+              variant='outlined'
+              InputLabelProps={{
+                shrink: true,
+              }}
               required
               id='password'
               label='Password'
               type='password'
+              placeholder='Leave Blank to Keep the Same'
               inputRef={passwordRef}
               fullWidth
               autoComplete='off'
@@ -72,11 +86,16 @@ const Signup = () => {
           </Grid>
           <Grid item xs={12}>
             <TextField
+              variant='outlined'
+              InputLabelProps={{
+                shrink: true,
+              }}
               required
               id='confirmPassword'
               label='Confirm Password'
               type='password'
               inputRef={passwordConfirmRef}
+              placeholder='Leave Blank to Keep the Same'
               fullWidth
               autoComplete='off'
             ></TextField>
@@ -89,17 +108,16 @@ const Signup = () => {
               onClick={handleSubmit}
               disabled={loading}
             >
-              {loading ? 'Signing You Up...' : 'Sign Up'}
+              {loading ? 'Updating...' : 'Update'}
             </Button>
           </Grid>
         </Grid>
         <Typography style={{ fontSize: '12px' }}>
-          Already Have an Account?
-          <Link to='/login'> Log In!</Link>
+          <Link to='/'> Cancel</Link>
         </Typography>
       </CardContent>
     </Card>
   );
 };
 
-export default Signup;
+export default UpdateProfile;
